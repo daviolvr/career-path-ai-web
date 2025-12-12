@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
 import LoginPage from "./pages/LoginPage";
 import RecoveryPage from "./pages/RecoveryPage";
@@ -24,31 +23,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 function App() {
   return (
     <div>
-      {/* DESCOMENTE PARA TESTAR PAGINAS KK */}
-      <nav>
-        <ul>
-          <li><Link to="/login">Login</Link></li>
-          <li><Link to="/recovery">Recuperar Senha</Link></li>
-          <li><Link to="/register">Registrar</Link></li>
-          <li><Link to="/reset">Reset</Link></li>
-          <li><Link to="/upload">upload</Link></li>
-          <li><Link to="/home">home</Link></li>
-          <li><Link to="/trail/1">Trilha</Link></li>
-          <li><Link to="/config">config</Link></li>
-          <li><Link to="/exclude">exclude</Link></li>
-          {/* <li><Link to="/asks">asks</Link></li> */}
-          
-          <li><Link to="/analise-curriculo/1">Resultado da Análise</Link></li>
-          <li><Link to="/historico-curriculos">Histórico de Análise de Currículos</Link></li>
-          <li><Link to="/historico-guias">Histórico de Guias de Entrevista</Link></li>
-          <li><Link to="/historico-trilhas">Histórico de Trilhas</Link></li>
-          <li><Link to="/interview-guide">Guia de Entrevista</Link></li>
-          <li><Link to="/interview-guide-result">Resposta da Guia de Entrevista</Link></li>
-          <li><Link to="/vocational-form">Criar Trilha de Estudo</Link></li>
-          <li><Link to="/vocational-form-response">Resposta da Trilha de Estudo</Link></li>
-        </ul>
-      </nav>
-
       {/* Rotas */}
       <Routes>
         {/* Rotas públicas */}
