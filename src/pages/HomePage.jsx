@@ -158,11 +158,9 @@ const HomePage = () => {
   }, []); 
   
 
-  const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user');
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    const { handleLogout: logoutHelper } = await import('../utils/logoutHelper');
+    await logoutHelper();
   };
 
   const goToUpload = () => {

@@ -87,11 +87,9 @@ const VocationalTrailResultPage = () => {
     fetchTrail();
   }, [id, navigate, user.name]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user");
-    window.location.href = "/login";
+  const handleLogout = async () => {
+    const { handleLogout: logoutHelper } = await import('../utils/logoutHelper');
+    await logoutHelper();
   };
 
   const handleExportPDF = () => {

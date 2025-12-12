@@ -19,6 +19,7 @@ import VocationalFormPage from './pages/VocationalFormPage';
 import VocationalTrailResultPage from './pages/VocationalTrailResultPage';
 import InterviewGuideHistoryPage from './pages/InterviewGuideHistoryPage';
 import ResumeAnalysisPage from './pages/ResumeAnalysisPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -50,25 +51,31 @@ function App() {
 
       {/* Rotas */}
       <Routes>
+        {/* Rotas públicas */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/recovery" element={<RecoveryPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/reset" element={<ResetPassPage />} />
-        <Route path="/upload" element={<UploadResumePage />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/trail/:id" element={<DevelopmentTrailPage />} />
-        <Route path="/config" element={<ConfigPage />} />
-        <Route path="/exclude" element={<ExcludePage />} />
-        {/* <Route path="/asks" element={<AskPage />} /> */}
-        <Route path="/historico-trilhas" element={<StudyTrailHistoryPage />} />
-        <Route path="/historico-curriculos" element={<ResumeAnalysisHistoryPage />} />
-        <Route path="/historico-guias" element={<InterviewGuideHistoryPage />} />
-        <Route path="/analise-curriculo" element={<ResumeAnalysisPage />} />
-        <Route path="/analise-curriculo/:id" element={<ResumeAnalysisPage />} />
-        <Route path="/interview-guide" element={<InterviewGuidePage />} />
-        <Route path="/interview-guide-result/:id" element={<InterviewGuideResultPage />} />
-        <Route path="/vocational-form" element={<VocationalFormPage />} />
-        <Route path="/vocational-form-response" element={<VocationalTrailResultPage />} />
+        
+        {/* Rotas protegidas */}
+        <Route path="/upload" element={<ProtectedRoute><UploadResumePage /></ProtectedRoute>} />
+        <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+        <Route path="/trail/:id" element={<ProtectedRoute><DevelopmentTrailPage /></ProtectedRoute>} />
+        <Route path="/config" element={<ProtectedRoute><ConfigPage /></ProtectedRoute>} />
+        <Route path="/exclude" element={<ProtectedRoute><ExcludePage /></ProtectedRoute>} />
+        {/* <Route path="/asks" element={<ProtectedRoute><AskPage /></ProtectedRoute>} /> */}
+        <Route path="/historico-trilhas" element={<ProtectedRoute><StudyTrailHistoryPage /></ProtectedRoute>} />
+        <Route path="/historico-curriculos" element={<ProtectedRoute><ResumeAnalysisHistoryPage /></ProtectedRoute>} />
+        <Route path="/historico-guias" element={<ProtectedRoute><InterviewGuideHistoryPage /></ProtectedRoute>} />
+        <Route path="/analise-curriculo" element={<ProtectedRoute><ResumeAnalysisPage /></ProtectedRoute>} />
+        <Route path="/analise-curriculo/:id" element={<ProtectedRoute><ResumeAnalysisPage /></ProtectedRoute>} />
+        <Route path="/interview-guide" element={<ProtectedRoute><InterviewGuidePage /></ProtectedRoute>} />
+        <Route path="/interview-guide-result/:id" element={<ProtectedRoute><InterviewGuideResultPage /></ProtectedRoute>} />
+        <Route path="/vocational-form" element={<ProtectedRoute><VocationalFormPage /></ProtectedRoute>} />
+        <Route path="/vocational-form-response" element={<ProtectedRoute><VocationalTrailResultPage /></ProtectedRoute>} />
+        
+        {/* Rota padrão redireciona para home */}
+        <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
       </Routes>
     </div>
   );

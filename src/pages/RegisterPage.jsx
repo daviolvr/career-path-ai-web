@@ -44,14 +44,25 @@ const RegisterPage = ({ onForgotPassword }) => {
       }
 
     } catch (err) {
-      console.error(err);
+      console.error('Erro no cadastro:', err);
       // Melhor tratamento de erro
       let errorMessage = 'Erro ao cadastrar. Verifique os dados e tente novamente.';
       
       if (err.message) {
-        errorMessage = err.message;
-      } else if (err.response && err.response.data && err.response.data.detail) {
-        errorMessage = err.response.data.detail;
+        // Se a mensagem for uma string, usa diretamente
+        errorMessage = typeof err.message === 'string' ? err.message : String(err.message);
+      } else if (err.response && err.response.data) {
+        const detail = err.response.data.detail;
+        if (typeof detail === 'string') {
+          errorMessage = detail;
+        } else if (typeof detail === 'object' && detail !== null) {
+          errorMessage = detail.message || detail.error || JSON.stringify(detail);
+        }
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      } else if (err && typeof err === 'object') {
+        // Último recurso: tenta extrair mensagem de qualquer propriedade
+        errorMessage = err.message || err.error || err.detail || String(err);
       }
       
       setError(errorMessage);

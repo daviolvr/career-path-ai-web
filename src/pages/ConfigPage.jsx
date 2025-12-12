@@ -68,14 +68,8 @@ const ConfigPage = () => {
   };
 
   const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (err) {
-      console.error('Erro ao fazer logout:', err);
-    } finally {
-      localStorage.clear();
-      navigate("/login");
-    }
+    const { handleLogout: logoutHelper } = await import('../utils/logoutHelper');
+    await logoutHelper();
   };
 
   const handleDelete = async () => {

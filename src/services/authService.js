@@ -16,8 +16,31 @@ export async function registerUser(email, name, password) {
     
     try {
       const errorData = await response.json();
+      
+      // Trata diferentes formatos de erro do FastAPI
       if (errorData.detail) {
-        errorMessage = errorData.detail;
+        // Se detail for um objeto (ex: {"error": "...", "message": "..."})
+        if (typeof errorData.detail === 'object') {
+          if (errorData.detail.message) {
+            errorMessage = errorData.detail.message;
+          } else if (errorData.detail.error) {
+            errorMessage = errorData.detail.error;
+          } else {
+            errorMessage = JSON.stringify(errorData.detail);
+          }
+        } 
+        // Se detail for um array (erros de validação do Pydantic)
+        else if (Array.isArray(errorData.detail)) {
+          const messages = errorData.detail.map(err => {
+            if (err.msg) return err.msg;
+            return `${err.loc?.join('.')}: ${err.msg || 'Erro de validação'}`;
+          });
+          errorMessage = messages.join('. ');
+        }
+        // Se detail for uma string
+        else {
+          errorMessage = errorData.detail;
+        }
       }
     } catch (e) {
       // Se não conseguir parsear JSON, usa mensagem padrão

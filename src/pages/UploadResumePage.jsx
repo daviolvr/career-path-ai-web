@@ -16,11 +16,9 @@ const UploadResumePage = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB em bytes
 
-  const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user');
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    const { handleLogout: logoutHelper } = await import('../utils/logoutHelper');
+    await logoutHelper();
   };
 
   const validateFile = (file) => {

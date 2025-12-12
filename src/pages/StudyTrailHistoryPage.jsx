@@ -103,11 +103,9 @@ const StudyTrailHistoryPage = () => {
   const trilhasPaginaAtual = trilhasFiltradas.slice(indexUltimo - itensPorPagina, indexUltimo);
   const totalPaginas = Math.ceil(trilhasFiltradas.length / itensPorPagina);
 
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user");
-    window.location.href = "/login";
+  const handleLogout = async () => {
+    const { handleLogout: logoutHelper } = await import('../utils/logoutHelper');
+    await logoutHelper();
   };
 
   return (
