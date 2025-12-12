@@ -32,6 +32,18 @@ const StudyTrailHistoryPage = () => {
     fetchTrails();
   }, []);
 
+  const ordenarTrilhas = (lista, criterio) => {
+    let t = [...lista];
+
+    if (criterio === "mais-recente") {
+      return t.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    }
+    if (criterio === "mais-antigo") {
+      return t.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    }
+    return t;
+  };
+
   const handleDelete = async (trailId) => {
     if (!window.confirm('Tem certeza que deseja excluir esta trilha?')) {
       return;
@@ -40,7 +52,30 @@ const StudyTrailHistoryPage = () => {
     try {
       await deleteDevelopmentTrail(trailId);
       const response = await getDevelopmentTrails();
-      setTrilhas(response.development_trails || []);
+      const novasTrilhas = response.development_trails || [];
+      setTrilhas(novasTrilhas);
+      
+      // Recalcular paginação após deletar
+      const trilhasFormatadas = novasTrilhas.map(trail => {
+        const trailData = trail.development_trail || {};
+        const profileSummary = trailData.user_profile_summary || {};
+        const goal = profileSummary.professional_goal || trailData.professional_goal || 'Trilha de Desenvolvimento';
+        return {
+          id: trail.id,
+          titulo: goal,
+          dataCriacao: new Date(trail.created_at || new Date()).toLocaleDateString('pt-BR'),
+          created_at: trail.created_at
+        };
+      });
+      const trilhasOrdenadas = ordenarTrilhas(trilhasFormatadas, ordenacao);
+      const novoTotalPaginas = Math.ceil(trilhasOrdenadas.length / itensPorPagina);
+      
+      // Ajustar página se necessário
+      if (paginaAtual > novoTotalPaginas && novoTotalPaginas > 0) {
+        setPaginaAtual(novoTotalPaginas);
+      } else if (novoTotalPaginas === 0) {
+        setPaginaAtual(1);
+      }
     } catch (err) {
       console.error('Erro ao deletar trilha:', err);
       alert('Erro ao excluir trilha');
@@ -61,18 +96,6 @@ const StudyTrailHistoryPage = () => {
       created_at: trail.created_at
     };
   });
-
-  const ordenarTrilhas = (lista, criterio) => {
-    let t = [...lista];
-
-    if (criterio === "mais-recente") {
-      return t.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    }
-    if (criterio === "mais-antigo") {
-      return t.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-    }
-    return t;
-  };
 
   const trilhasFiltradas = ordenarTrilhas(formattedTrails, ordenacao);
 

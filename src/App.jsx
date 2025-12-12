@@ -38,9 +38,9 @@ function App() {
           {/* <li><Link to="/asks">asks</Link></li> */}
           
           <li><Link to="/analise-curriculo/1">Resultado da Análise</Link></li>
-          <li><Link to="/historico-trilhas">Histórico Trilhas</Link></li>
           <li><Link to="/historico-curriculos">Histórico de Análise de Currículos</Link></li>
           <li><Link to="/historico-guias">Histórico de Guias de Entrevista</Link></li>
+          <li><Link to="/historico-trilhas">Histórico de Trilhas</Link></li>
           <li><Link to="/interview-guide">Guia de Entrevista</Link></li>
           <li><Link to="/interview-guide-result">Resposta da Guia de Entrevista</Link></li>
           <li><Link to="/vocational-form">Criar Trilha de Estudo</Link></li>

@@ -6,7 +6,7 @@ import pdfLogo from '../assets/pdf.svg';
 import trilhaLogo from '../assets/trilha.svg';
 import balaoLogo from '../assets/balaoDeConversa.svg';
 import Header from '../components/Header'; // Usando o Header component
-import { getTotalDevelopmentTrail } from '../services/authService';
+import { getTotalDevelopmentTrail, getDevelopmentTrails, getInterviewGuides } from '../services/authService';
 import { getTotalInterviewGuide } from '../services/authService';
 import { getTotalAnalyzeResume } from '../services/authService';
 
@@ -18,6 +18,8 @@ const HomePage = () => {
   const [totalTrails, setTotalTrails] = React.useState(0);
   const [totalGuides, setTotalGuides] = React.useState(0);
   const [totalResumes, setTotalResumes] = React.useState(0);
+  const [recentGuides, setRecentGuides] = React.useState([]);
+  const [recentTrails, setRecentTrails] = React.useState([]);
 
   React.useEffect(() => {
     const fetchTotalTrails = async () => {
@@ -54,6 +56,105 @@ const HomePage = () => {
     };
 
     fetchTotalResumes();
+  }, []);
+
+  React.useEffect(() => {
+    const fetchRecentGuides = async () => {
+      try {
+        const response = await getInterviewGuides(0, 3);
+        const guides = response.interview_guides || [];
+        
+        const formattedGuides = guides.map(guide => {
+          try {
+            const guideData = guide.interview_guide || {};
+            const overview = guideData.preparation_overview || guideData.overview || '';
+            
+            let jobTitle = 'Guia de Entrevista';
+            if (overview) {
+              const titleMatch = overview.match(/(?:para|como|vaga|posição|de)\s+([^-–—]+?)(?:[-–—]|$)/i);
+              if (titleMatch) {
+                jobTitle = titleMatch[1].trim();
+              } else {
+                const words = overview.split(' ').slice(0, 5).join(' ');
+                jobTitle = words.length > 50 ? words.substring(0, 50) + '...' : words;
+              }
+            }
+            
+            const createdDate = guide.created_at ? new Date(guide.created_at) : new Date();
+            const now = new Date();
+            const diffTime = Math.abs(now - createdDate);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            let timeInfo = 'Hoje';
+            if (diffDays === 1) {
+              timeInfo = '1 dia atrás';
+            } else if (diffDays > 1 && diffDays < 7) {
+              timeInfo = `${diffDays} dias atrás`;
+            } else if (diffDays >= 7 && diffDays < 14) {
+              timeInfo = '1 semana atrás';
+            } else if (diffDays >= 14) {
+              const weeks = Math.floor(diffDays / 7);
+              timeInfo = `${weeks} semana${weeks > 1 ? 's' : ''} atrás`;
+            }
+            
+            return {
+              id: guide.id,
+              title: jobTitle,
+              description: overview.substring(0, 100) + (overview.length > 100 ? '...' : '') || 'Guia completo para entrevista',
+              timeInfo: timeInfo
+            };
+          } catch (error) {
+            console.error('Erro ao formatar guia:', error);
+            return {
+              id: guide.id || 0,
+              title: 'Guia de Entrevista',
+              description: 'Guia completo para entrevista',
+              timeInfo: 'Recente'
+            };
+          }
+        });
+        
+        setRecentGuides(formattedGuides);
+      } catch (error) {
+        console.error('Erro ao buscar guias recentes:', error);
+        setRecentGuides([]);
+      }
+    };
+
+    fetchRecentGuides();
+  }, []);
+
+  React.useEffect(() => {
+    const fetchRecentTrails = async () => {
+      try {
+        const response = await getDevelopmentTrails(0, 3);
+        const trails = response.development_trails || [];
+        
+        const formattedTrails = trails.map(trail => {
+          const trailData = trail.development_trail || {};
+          const profileSummary = trailData.user_profile_summary || {};
+          const goal = profileSummary.professional_goal || trailData.professional_goal || 'Trilha de Desenvolvimento';
+          
+          const status = trailData.status || 'pending';
+          const statusText = status === 'completed' ? 'Concluída' : 'Em andamento';
+          const statusClass = status === 'completed' ? 'green' : '';
+          
+          return {
+            id: trail.id,
+            title: goal,
+            status: statusText,
+            statusClass: statusClass
+          };
+        });
+        
+        setRecentTrails(formattedTrails);
+      } catch (error) {
+        console.error('Erro ao buscar trilhas recentes:', error);
+        setRecentTrails([]);
+      }
+    };
+
+    fetchRecentTrails();
   }, []); 
   
 
@@ -134,23 +235,20 @@ const HomePage = () => {
                 </button>
               </div>
 
-              <div className="guide-item">
-                <h3>Desenvolvedor Full Stack</h3>
-                <p>Análise completa com trilha de estudos focada em React e Node.js</p>
-                <span className="time-info">2 dias atrás</span>
-              </div>
-
-              <div className="guide-item">
-                <h3>Analista de Dados</h3>
-                <p>Recomendações para certificações em Python e SQL</p>
-                <span className="time-info">1 semana atrás</span>
-              </div>
-
-              <div className="guide-item">
-                <h3>UX/UI Designer</h3>
-                <p>Sugestões de portfólio e cursos de design thinking</p>
-                <span className="time-info">2 semanas atrás</span>
-              </div>
+              {recentGuides.length === 0 ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+                  <p>Nenhum guia de entrevista criado ainda.</p>
+                  <p style={{ fontSize: '14px', marginTop: '8px' }}>Crie seu primeiro guia!</p>
+                </div>
+              ) : (
+                recentGuides.map((guide) => (
+                  <div key={guide.id} className="guide-item" onClick={() => navigate(`/interview-guide-result/${guide.id}`)} style={{ cursor: 'pointer' }}>
+                    <h3>{guide.title}</h3>
+                    <p>{guide.description}</p>
+                    <span className="time-info">{guide.timeInfo}</span>
+                  </div>
+                ))
+              )}
             </section>
 
             {/* Minhas Trilhas de Estudo */}
@@ -164,19 +262,21 @@ const HomePage = () => {
                 </button>
               </div>
 
-              <div className="track">
-                <div className="track-header">
-                  <h3>Desenvolvedor Full Stack</h3>
-                  <span className="track-status">Em andamento</span>
+              {recentTrails.length === 0 ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+                  <p>Nenhuma trilha de estudo criada ainda.</p>
+                  <p style={{ fontSize: '14px', marginTop: '8px' }}>Crie sua primeira trilha!</p>
                 </div>
-              </div>
-
-              <div className="track">
-                <div className="track-header">
-                  <h3>Análise de Dados</h3>
-                  <span className="track-status green">Concluída</span>
-                </div>
-              </div>
+              ) : (
+                recentTrails.map((trail) => (
+                  <div key={trail.id} className="track" onClick={() => navigate(`/trail/${trail.id}`)} style={{ cursor: 'pointer' }}>
+                    <div className="track-header">
+                      <h3>{trail.title}</h3>
+                      <span className={`track-status ${trail.statusClass}`}>{trail.status}</span>
+                    </div>
+                  </div>
+                ))
+              )}
             </section>
           </div>
 

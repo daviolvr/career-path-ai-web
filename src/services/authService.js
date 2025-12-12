@@ -1,3 +1,5 @@
+import { apiRequest } from '../utils/apiClient';
+
 const API_URL = 'http://localhost:8000';
 
 export async function registerUser(email, name, password) {

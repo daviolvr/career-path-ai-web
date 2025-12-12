@@ -34,6 +34,18 @@ const ResumeAnalysisHistoryPage = () => {
     fetchAnalyses();
   }, []);
 
+  const ordenarAnalises = (lista, criterio) => {
+    let t = [...lista];
+    
+    if (criterio === "mais-recente") {
+      return t.sort((a, b) => new Date(b.analysis.created_at) - new Date(a.analysis.created_at));
+    }
+    if (criterio === "mais-antigo") {
+      return t.sort((a, b) => new Date(a.analysis.created_at) - new Date(b.analysis.created_at));
+    }
+    return t;
+  };
+
   const handleDelete = async (analysisId) => {
     if (!window.confirm('Tem certeza que deseja excluir esta análise?')) {
       return;
@@ -43,8 +55,27 @@ const ResumeAnalysisHistoryPage = () => {
       await deleteResumeAnalysis(analysisId);
       // Recarrega a lista
       const response = await getResumeAnalyses(0, 100);
-      setAnalises(response.analises || []);
+      const novasAnalises = response.analyses || [];
+      setAnalises(novasAnalises);
       setTotalCount(response.total_count || 0);
+      
+      // Recalcular paginação após deletar
+      const analisesFormatadasNovas = novasAnalises.map(analysis => ({
+        id: analysis.id,
+        titulo: `Análise: ${analysis.original_filename || 'Currículo'}`,
+        fileName: analysis.original_filename || 'Currículo.pdf',
+        dataAnalise: new Date(analysis.created_at).toLocaleDateString('pt-BR'),
+        analysis: analysis
+      }));
+      const analisesOrdenadasNovas = ordenarAnalises(analisesFormatadasNovas, ordenacao);
+      const novoTotalPaginas = Math.ceil(analisesOrdenadasNovas.length / itensPorPagina);
+      
+      // Ajustar página se necessário
+      if (paginaAtual > novoTotalPaginas && novoTotalPaginas > 0) {
+        setPaginaAtual(novoTotalPaginas);
+      } else if (novoTotalPaginas === 0) {
+        setPaginaAtual(1);
+      }
     } catch (err) {
       console.error('Erro ao deletar análise:', err);
       alert('Erro ao excluir análise');
@@ -60,18 +91,6 @@ const ResumeAnalysisHistoryPage = () => {
     dataAnalise: new Date(analysis.created_at).toLocaleDateString('pt-BR'),
     analysis: analysis
   }));
-
-  const ordenarAnalises = (lista, criterio) => {
-    let t = [...lista];
-    
-    if (criterio === "mais-recente") {
-      return t.sort((a, b) => new Date(b.analysis.created_at) - new Date(a.analysis.created_at));
-    }
-    if (criterio === "mais-antigo") {
-      return t.sort((a, b) => new Date(a.analysis.created_at) - new Date(b.analysis.created_at));
-    }
-    return t;
-  };
 
   const analisesFiltradas = ordenarAnalises(analisesFormatadas, ordenacao);
 

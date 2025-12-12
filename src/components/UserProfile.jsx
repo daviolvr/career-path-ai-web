@@ -14,13 +14,13 @@ const UserProfile = ({ user, onLogout }) => {
     setIsDropdownOpen(false);
   };
 
-  const handleHistoricoTrilhas = () => {
-    navigate("/historico-trilhas");
+  const handleHistoricoGuias = () => {
+    navigate("/historico-guias");
     setIsDropdownOpen(false);
   };
 
-  const handleHistoricoGuias = () => {
-    navigate("/historico-guias");
+  const handleHistoricoTrilhas = () => {
+    navigate("/historico-trilhas");
     setIsDropdownOpen(false);
   };
 
@@ -83,25 +83,6 @@ const UserProfile = ({ user, onLogout }) => {
           </button>
 
           <button 
-            onClick={handleHistoricoTrilhas}
-            style={{
-              width: '100%',
-              padding: '10px 16px',
-              border: 'none',
-              background: 'none',
-              textAlign: 'left',
-              cursor: 'pointer',
-              fontSize: '14px',
-              color: '#374151',
-              borderBottom: '1px solid #f3f4f6'
-            }}
-            onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
-            onMouseLeave={(e) => e.target.style.background = 'none'}
-          >
-            Histórico de Trilhas de Estudo
-          </button>
-
-          <button 
             onClick={handleHistoricoGuias}
             style={{
               width: '100%',
@@ -118,6 +99,25 @@ const UserProfile = ({ user, onLogout }) => {
             onMouseLeave={(e) => e.target.style.background = 'none'}
           >
             Histórico de Guias de Entrevista
+          </button>
+
+          <button 
+            onClick={handleHistoricoTrilhas}
+            style={{
+              width: '100%',
+              padding: '10px 16px',
+              border: 'none',
+              background: 'none',
+              textAlign: 'left',
+              cursor: 'pointer',
+              fontSize: '14px',
+              color: '#374151',
+              borderBottom: '1px solid #f3f4f6'
+            }}
+            onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
+            onMouseLeave={(e) => e.target.style.background = 'none'}
+          >
+            Histórico de Trilhas
           </button>
 
           <button 

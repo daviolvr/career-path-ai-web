@@ -10,6 +10,7 @@ const VocationalFormPage = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user")) || { name: "Usuário" };
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const totalSteps = 12;
 
   const [formData, setFormData] = useState({
@@ -154,6 +155,10 @@ const VocationalFormPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (isSubmitting) return; // Previne múltiplos submits
+    
+    setIsSubmitting(true);
+    
     // Preparar os dados para enviar ao backend
     const submissionData = {
       ...formData,
@@ -182,6 +187,7 @@ const VocationalFormPage = () => {
       }
       
       alert(errorMessage);
+      setIsSubmitting(false); // Reabilita o botão em caso de erro
     }
   };
 
@@ -309,8 +315,29 @@ const VocationalFormPage = () => {
 
                 {/* Botão próximo ou enviar */}
                 {currentStep === totalSteps ? (
-                <button type="submit" className="nav-circle-btn">
-                    ✓
+                <button 
+                  type="submit" 
+                  className="nav-circle-btn"
+                  disabled={isSubmitting}
+                  style={{
+                    opacity: isSubmitting ? 0.8 : 1,
+                    cursor: isSubmitting ? 'wait' : 'pointer',
+                    position: 'relative'
+                  }}
+                >
+                  {isSubmitting ? (
+                    <span style={{ 
+                      display: 'inline-block',
+                      width: '18px',
+                      height: '18px',
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      borderTop: '2px solid #ffffff',
+                      borderRadius: '50%',
+                      animation: 'spin 0.8s linear infinite'
+                    }}></span>
+                  ) : (
+                    '✓'
+                  )}
                 </button>
                 ) : (
                 <button type="submit" className="nav-circle-btn">

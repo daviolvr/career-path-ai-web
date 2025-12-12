@@ -70,7 +70,7 @@ const ResumeAnalysisPage = () => {
   };
 
   const handleNewGuide = () => {
-    navigate('/interview-guide');
+    navigate('/upload');
   };
 
   if (loading) {
