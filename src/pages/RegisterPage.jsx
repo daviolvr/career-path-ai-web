@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import logo from '../assets/div.svg';
 import emailLogo from '../assets/Vector.svg';
@@ -8,6 +9,7 @@ import { registerUser, loginUser } from '../services/authService';
 import './RegisterPage.css';
 
 const RegisterPage = ({ onForgotPassword }) => {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -130,6 +132,11 @@ const RegisterPage = ({ onForgotPassword }) => {
 
           <button type="submit" className="login-button">Cadastrar</button>
         </form>
+
+        <div className="signup-section">
+          <p className="signup-text">Já tem uma conta?</p>
+          <button type="button" className="signup-button" onClick={() => navigate("/login")}>Fazer login</button>
+        </div>
 
         <footer className="footer">
           <p>&copy; 2025 CareerPath-AI. Todos os direitos reservados.</p>
