@@ -34,3 +34,15 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  docker:
+    name: Frontend (build da imagem)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      # Só constrói (sem publicar): garante que o Dockerfile continua válido.
+      - name: Build da imagem
+        run: docker build -f docker/Dockerfile -t career-path-web:ci .
+

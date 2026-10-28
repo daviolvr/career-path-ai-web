@@ -28,6 +28,18 @@ npm run dev              # http://localhost:5173
 
 O backend só aceita requisições da origem configurada em `FRONTEND_HOST`; para o servidor de desenvolvimento, use `http://localhost:5173`.
 
+### Docker (build de produção)
+
+A imagem compila o app (Node 22) e serve os arquivos estáticos com nginx sem privilégios (usuário `nginx`, porta 8080). O `VITE_API_URL` é fixado **no build**:
+
+```bash
+docker build -f docker/Dockerfile -t career-path-web \
+  --build-arg VITE_API_URL=http://localhost:8000 .
+docker run --rm -p 5173:8080 career-path-web   # http://localhost:5173
+```
+
+Para subir tudo junto (API, banco, Redis e este frontend), use o `docker compose` do [backend](https://github.com/daviolvr/career-path-ai-api).
+
 | Script | O que faz |
 |---|---|
 | `npm run dev` | servidor de desenvolvimento do Vite |
@@ -45,7 +57,7 @@ O contrato completo (rotas, formato de erro, limites de requisição) está na d
 
 ## Qualidade
 
-- **CI** (GitHub Actions): `npm run lint` e `npm run build`.
+- **CI** (GitHub Actions): `npm run lint`, `npm run build` e o build da imagem Docker.
 - **Não há testes automatizados** do frontend.
 
 ## Limitações
@@ -55,5 +67,5 @@ O contrato completo (rotas, formato de erro, limites de requisição) está na d
 - **Erros que o usuário não vê:** em algumas telas o erro é registrado no estado, mas **não é exibido**. Por exemplo, ao excluir a conta com a senha errada e ao pedir o link de recuperação de senha com falha, nada aparece na tela (`ExcludePage`, `RecoveryPage`; em `ConfigPage` isso vale para o erro do link de redefinição).
 - **Não verifiquei** como as telas reagem aos erros `429` (limite de requisições) e `503` (serviço indisponível) do backend, nem a erros de validação `422` por campo fora dos formulários que já leem o envelope.
 - A tela da trilha (`DevelopmentTrailPage`) decide o que mostrar a partir do **texto** da mensagem de erro, o que é frágil.
-- O `Dockerfile` em `docker/` roda o **servidor de desenvolvimento** do Vite (`npm run dev`), não um build de produção, e usa Node 20 enquanto o CI usa Node 22.
+- A imagem Docker foi testada localmente (rotas do React Router, cache de assets, usuário não-root, healthcheck), mas **sem** cabeçalhos de segurança (CSP, HSTS) e sem TLS: isso fica para o proxy ou o provedor de hospedagem.
 - `axios` consta nas dependências, mas nenhum arquivo de `src/` o usa.
