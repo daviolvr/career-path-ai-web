@@ -1,4 +1,4 @@
-import { readErrorMessage } from '../utils/errorMessage';
+import { buildApiError } from '../utils/apiError';
 import { API_URL } from '../config';
 
 export async function registerUser(email, name, password) {
@@ -11,11 +11,7 @@ export async function registerUser(email, name, password) {
   });
 
   if (!response.ok) {
-    const errorMessage = await readErrorMessage(response, 'Erro ao cadastrar. Verifique os dados e tente novamente.');
-
-    const error = new Error(errorMessage);
-    error.status = response.status;
-    throw error;
+    throw await buildApiError(response, 'Erro ao cadastrar. Verifique os dados e tente novamente.');
   }
 
   return await response.json();
@@ -31,11 +27,7 @@ export async function loginUser(email, password) {
   });
 
   if (!response.ok) {
-    const errorMessage = await readErrorMessage(response, 'Credenciais inválidas');
-
-    const error = new Error(errorMessage);
-    error.status = response.status;
-    throw error;
+    throw await buildApiError(response, 'Credenciais inválidas');
   }
 
   return await response.json();
@@ -51,7 +43,7 @@ export async function emailResetPassword(email) {
   });
 
   if (!response.ok) {
-    throw new Error('email inválido');
+    throw await buildApiError(response, 'Não foi possível enviar o e-mail de recuperação.');
   }
 
   return await response.json();
@@ -70,7 +62,7 @@ export async function resetPassword(token, password) {
   });
 
   if (!response.ok) {
-    throw new Error('senha inválida');
+    throw await buildApiError(response, 'Não foi possível redefinir a senha.');
   }
 
   return await response.json();
@@ -91,7 +83,7 @@ export async function uploadResume(file) {
   });
 
   if (!response.ok) {
-    throw new Error('Erro ao fazer upload do currículo');
+    throw await buildApiError(response, 'Erro ao fazer upload do currículo');
   }
 
   return await response.json();
@@ -114,11 +106,7 @@ export async function excludeUser(password) {
   });
 
   if (!response.ok) {
-    const errorMessage = await readErrorMessage(response, 'Erro ao excluir conta');
-
-    const error = new Error(errorMessage);
-    error.status = response.status;
-    throw error;
+    throw await buildApiError(response, 'Erro ao excluir conta');
   }
 
   return await response.json(); 
@@ -141,11 +129,7 @@ export async function EditUserName(name) {
   });
 
   if (!response.ok) {
-    const errorMessage = await readErrorMessage(response, 'Erro ao atualizar nome');
-
-    const error = new Error(errorMessage);
-    error.status = response.status;
-    throw error;
+    throw await buildApiError(response, 'Erro ao atualizar nome');
   }
 
   return await response.json(); 
@@ -170,9 +154,7 @@ export async function getDevelopmentTrails(skip = 0, limit = 100) {
     if (response.status === 404) {
       return { development_trails: [], total_count: 0 };
     }
-    const errorMessage = await readErrorMessage(response, 'Erro ao buscar trilhas de desenvolvimento');
-
-    throw new Error(errorMessage);
+    throw await buildApiError(response, 'Erro ao buscar trilhas de desenvolvimento');
   }
 
   return await response.json();
@@ -193,11 +175,7 @@ export async function getDevelopmentTrailById(trailId) {
   });
 
   if (!response.ok) {
-    const errorMessage = await readErrorMessage(response, 'Erro ao buscar trilha de desenvolvimento');
-
-    const error = new Error(errorMessage);
-    error.status = response.status;
-    throw error;
+    throw await buildApiError(response, 'Erro ao buscar trilha de desenvolvimento');
   }
 
   return await response.json();
@@ -222,11 +200,7 @@ export async function getTotalDevelopmentTrail() {
     if (response.status === 404) {
       return 0;
     }
-    const errorMessage = await readErrorMessage(response, 'Erro ao buscar total de trilhas');
-
-    const error = new Error(errorMessage);
-    error.status = response.status;
-    throw error;
+    throw await buildApiError(response, 'Erro ao buscar total de trilhas');
   }
 
   const data = await response.json();
@@ -253,11 +227,7 @@ export async function getTotalAnalyzeResume() {
     if (response.status === 404) {
       return 0;
     }
-    const errorMessage = await readErrorMessage(response, 'Erro ao buscar total de currículos');
-
-    const error = new Error(errorMessage);
-    error.status = response.status;
-    throw error;
+    throw await buildApiError(response, 'Erro ao buscar total de currículos');
   }
 
   const data = await response.json();
@@ -280,11 +250,7 @@ export async function getTotalInterviewGuide() {
   });
 
   if (!response.ok) {
-    const errorMessage = await readErrorMessage(response, 'Erro ao buscar total de conversas');
-
-    const error = new Error(errorMessage);
-    error.status = response.status;
-    throw error;
+    throw await buildApiError(response, 'Erro ao buscar total de conversas');
   }
 
   const data = await response.json();
@@ -316,11 +282,7 @@ export async function analyzeResume(file) {
   });
 
   if (!response.ok) {
-    const errorMessage = await readErrorMessage(response, 'Erro ao enviar currículo para análise');
-
-    const error = new Error(errorMessage);
-    error.status = response.status;
-    throw error;
+    throw await buildApiError(response, 'Erro ao enviar currículo para análise');
   }
 
   return await response.json(); // Deve retornar o ID da análise ou dados da análise
@@ -351,11 +313,7 @@ export async function analyzeInterviewGuide(job_description, file) {
   });
 
   if (!response.ok) {
-    const errorMessage = await readErrorMessage(response, 'Erro ao gerar guia de entrevista');
-
-    const error = new Error(errorMessage);
-    error.status = response.status;
-    throw error;
+    throw await buildApiError(response, 'Erro ao gerar guia de entrevista');
   }
 
   return await response.json();
@@ -377,7 +335,7 @@ export async function getResumeAnalysisById(analysisId) {
   });
 
   if (!response.ok) {
-    throw new Error('Erro ao buscar análise de currículo');
+    throw await buildApiError(response, 'Erro ao buscar análise de currículo');
   }
 
   return await response.json();
@@ -402,9 +360,7 @@ export async function getResumeAnalyses(skip = 0, limit = 100) {
     if (response.status === 404) {
       return { analyses: [], total_count: 0 };
     }
-    const errorMessage = await readErrorMessage(response, 'Erro ao buscar análises de currículo');
-
-    throw new Error(errorMessage);
+    throw await buildApiError(response, 'Erro ao buscar análises de currículo');
   }
 
   return await response.json();
@@ -425,7 +381,7 @@ export async function deleteResumeAnalysis(analysisId) {
   });
 
   if (!response.ok) {
-    throw new Error('Erro ao deletar análise de currículo');
+    throw await buildApiError(response, 'Erro ao deletar análise de currículo');
   }
 
   return await response.json();
@@ -447,7 +403,7 @@ export async function getInterviewGuideById(guideId) {
   });
 
   if (!response.ok) {
-    throw new Error('Erro ao buscar guia de entrevista');
+    throw await buildApiError(response, 'Erro ao buscar guia de entrevista');
   }
 
   return await response.json();
@@ -472,9 +428,7 @@ export async function getInterviewGuides(skip = 0, limit = 100) {
     if (response.status === 404) {
       return { interview_guides: [], total_count: 0 };
     }
-    const errorMessage = await readErrorMessage(response, 'Erro ao buscar guias de entrevista');
-
-    throw new Error(errorMessage);
+    throw await buildApiError(response, 'Erro ao buscar guias de entrevista');
   }
 
   return await response.json();
@@ -495,7 +449,7 @@ export async function deleteInterviewGuide(guideId) {
   });
 
   if (!response.ok) {
-    throw new Error('Erro ao deletar guia de entrevista');
+    throw await buildApiError(response, 'Erro ao deletar guia de entrevista');
   }
 
   return await response.json();
@@ -519,10 +473,7 @@ export async function createDevelopmentTrail(trailData) {
   });
 
   if (!response.ok) {
-    const errorMessage = await readErrorMessage(response, 'Erro ao criar trilha');
-    const error = new Error(errorMessage);
-    error.status = response.status;
-    throw error;
+    throw await buildApiError(response, 'Erro ao criar trilha');
   }
 
   return await response.json();
@@ -543,7 +494,7 @@ export async function deleteDevelopmentTrail(trailId) {
   });
 
   if (!response.ok) {
-    throw new Error('Erro ao deletar trilha de desenvolvimento');
+    throw await buildApiError(response, 'Erro ao deletar trilha de desenvolvimento');
   }
 
   return await response.json();
@@ -565,7 +516,7 @@ export async function getCurrentUser() {
   });
 
   if (!response.ok) {
-    throw new Error('Erro ao buscar dados do usuário');
+    throw await buildApiError(response, 'Erro ao buscar dados do usuário');
   }
 
   return await response.json();

@@ -14,11 +14,3 @@ export function extractErrorMessage(errorData, fallback) {
 
   return fallback;
 }
-
-export async function readErrorMessage(response, fallback) {
-  try {
-    return extractErrorMessage(await response.json(), fallback);
-  } catch {
-    return fallback;
-  }
-}
