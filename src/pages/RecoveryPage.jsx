@@ -6,22 +6,23 @@ import emailLogo from '../assets/Vector.svg'
 import './RecoveryPage.css';
 
 import { emailResetPassword } from '../services/authService'; 
+import { describeError } from '../utils/apiError';
 
 const RecoveryPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
-  const [, setError] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(' ');
+    setError('');
     try {
       await emailResetPassword(email);
       alert("Se o e-mail existir, enviaremos instruções para redefinir sua senha.");
 
     } catch (err) {
       console.error(err);
-      setError('Erro ao gerar link para resetar senha');
+      setError(describeError(err, 'Não foi possível enviar o e-mail de recuperação.'));
     }
   };
 
@@ -41,6 +42,8 @@ const RecoveryPage = () => {
 
         {/* Formulário */}
         <form onSubmit={handleSubmit} className="login-form">
+          {error && <p className="error">{error}</p>}
+
           {/* Campo de E-mail */}
           <div className="form-group">
             <label className="form-label">E-mail</label>

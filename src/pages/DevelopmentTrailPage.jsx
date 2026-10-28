@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header'; // Importando o Header component
 import { getDevelopmentTrailById } from '../services/authService';
-import { API_URL } from '../config';
+import { describeTrailError } from '../utils/describeTrailError';
 import jsPDF from 'jspdf';
 import './DevelopmentTrailPage.css';
 
@@ -43,18 +43,7 @@ const DevelopmentTrailPage = () => {
           id: id
         });
         
-        // Mensagens de erro mais específicas
-        if (err.status === 404 || err.message.includes('404') || err.message.includes('não encontrada')) {
-          setError(`Trilha com ID ${id} não encontrada. Verifique se o ID está correto ou se você tem acesso a esta trilha.`);
-        } else if (err.status === 401 || err.message.includes('401') || err.message.includes('não autorizado') || err.message.includes('Token')) {
-          setError('Você não tem permissão para acessar esta trilha. Faça login novamente.');
-        } else if (err.status === 403 || err.message.includes('403')) {
-          setError('Acesso negado. Esta trilha pertence a outro usuário.');
-        } else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-          setError(`Erro de conexão com o servidor. Verifique se o backend está rodando em ${API_URL}`);
-        } else {
-          setError(`Erro ao carregar trilha: ${err.message || 'Erro desconhecido'}. Verifique o console para mais detalhes.`);
-        }
+        setError(describeTrailError(err, id));
       } finally {
         setLoading(false);
       }

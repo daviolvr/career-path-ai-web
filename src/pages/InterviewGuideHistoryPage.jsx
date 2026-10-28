@@ -4,12 +4,14 @@ import './InterviewGuideHistoryPage.css';
 import logo from '../assets/div.svg';
 import UserProfile from '../components/UserProfile';
 import { getInterviewGuides, deleteInterviewGuide } from '../services/authService';
+import { describeError } from '../utils/apiError';
 
 const InterviewGuideHistoryPage = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const [guides, setGuides] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     const fetchGuides = async () => {
@@ -30,6 +32,7 @@ const InterviewGuideHistoryPage = () => {
       } catch (err) {
         console.error('Erro ao buscar guias:', err);
         setGuides([]);
+        setLoadError(describeError(err, 'Erro ao buscar guias.'));
       } finally {
         setLoading(false);
       }
@@ -49,7 +52,7 @@ const InterviewGuideHistoryPage = () => {
       setGuides(response.interview_guides || []);
     } catch (err) {
       console.error('Erro ao deletar guia:', err);
-      alert('Erro ao excluir guia');
+      alert(describeError(err, 'Erro ao excluir guia'));
     }
   };
 
@@ -167,6 +170,8 @@ const InterviewGuideHistoryPage = () => {
               <div style={{ textAlign: 'center', padding: '40px' }}>
                 <p>Carregando guias...</p>
               </div>
+            ) : loadError ? (
+              <p className="error">{loadError}</p>
             ) : formattedGuides.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 20px' }}>
                 <div style={{ fontSize: '48px', marginBottom: '20px' }}>💼</div>

@@ -5,6 +5,7 @@ import logo from '../assets/div.svg';
 import UserProfile from '../components/UserProfile';
 import { createDevelopmentTrail } from '../services/authService';
 import './VocationalFormPage.css';
+import { describeError } from '../utils/apiError';
 
 const VocationalFormPage = () => {
   const navigate = useNavigate();
@@ -177,16 +178,7 @@ const VocationalFormPage = () => {
     } catch (error) {
       console.error('Erro ao gerar trilha:', error);
       
-      // Mensagem de erro mais específica
-      let errorMessage = 'Erro ao gerar trilha de estudos. Tente novamente.';
-      
-      if (error.status === 429) {
-        errorMessage = 'Limite de uso da API do Gemini excedido. Por favor, aguarde alguns minutos e tente novamente. O plano gratuito tem limites reduzidos.';
-      } else if (error.message && error.message.includes('authentication')) {
-        errorMessage = 'Erro de autenticação. Verifique a configuração da API.';
-      }
-      
-      alert(errorMessage);
+      alert(describeError(error, 'Erro ao gerar trilha de estudos. Tente novamente.'));
       setIsSubmitting(false); // Reabilita o botão em caso de erro
     }
   };

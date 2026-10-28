@@ -4,6 +4,7 @@ import logo from "../assets/div.svg";
 import UserProfile from "../components/UserProfile";
 import { getResumeAnalyses, deleteResumeAnalysis } from "../services/authService";
 import "./ResumeAnalysisHistoryPage.css";
+import { describeError } from '../utils/apiError';
 
 const ResumeAnalysisHistoryPage = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const ResumeAnalysisHistoryPage = () => {
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [analises, setAnalises] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [totalCount, setTotalCount] = useState(0);
   const itensPorPagina = 4;
 
@@ -26,6 +28,7 @@ const ResumeAnalysisHistoryPage = () => {
       } catch (err) {
         console.error('Erro ao buscar análises:', err);
         setAnalises([]);
+        setLoadError(describeError(err, 'Erro ao buscar análises.'));
       } finally {
         setLoading(false);
       }
@@ -78,7 +81,7 @@ const ResumeAnalysisHistoryPage = () => {
       }
     } catch (err) {
       console.error('Erro ao deletar análise:', err);
-      alert('Erro ao excluir análise');
+      alert(describeError(err, 'Erro ao excluir análise'));
     }
   };
 
@@ -154,6 +157,8 @@ const ResumeAnalysisHistoryPage = () => {
               <div style={{ textAlign: 'center', padding: '40px' }}>
                 <p>Carregando análises...</p>
               </div>
+            ) : loadError ? (
+              <p className="error">{loadError}</p>
             ) : analisesPaginaAtual.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 20px' }}>
                 <div style={{ fontSize: '48px', marginBottom: '20px' }}>📄</div>

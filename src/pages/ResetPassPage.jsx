@@ -6,6 +6,7 @@ import passwordLogo from '../assets/pass.svg';
 import './RecoveryPage.css';
 
 import { resetPassword } from '../services/authService'; 
+import { describeError } from '../utils/apiError';
 
 const ResetPassPage = () => {
   const [params] = useSearchParams();
@@ -30,7 +31,7 @@ const ResetPassPage = () => {
     
         } catch (err) {
           console.error(err);
-          setError('Erro ao gerar link para resetar senha');
+          setError(describeError(err, 'Não foi possível redefinir a senha.'));
         }
 
 

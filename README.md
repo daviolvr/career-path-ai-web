@@ -44,6 +44,7 @@ Para subir tudo junto (API, banco, Redis e este frontend), use o `docker compose
 |---|---|
 | `npm run dev` | servidor de desenvolvimento do Vite |
 | `npm run lint` | ESLint em todo o projeto |
+| `npm test` | testes (Vitest) |
 | `npm run build` | build de produção em `dist/` |
 | `npm run preview` | serve o build localmente |
 
@@ -53,19 +54,19 @@ O contrato completo (rotas, formato de erro, limites de requisição) está na d
 
 - **Tokens:** guarda `access_token` e `refresh_token` no `localStorage` (ver [Limitações](#limitações)).
 - **Renovação automática** (`src/utils/apiClient.js`, ativada pelo `fetchInterceptor`): ao receber `401`, chama `POST /auth/refresh` uma única vez (requisições simultâneas esperam na mesma fila) e repete a requisição. O backend **rotaciona** o refresh token: a resposta traz um novo, que o cliente passa a guardar; o anterior deixa de valer. Se a renovação falhar, remove os tokens e o usuário do `localStorage` e vai para `/login`.
-- **Erros:** lê o envelope `{"error": {"status", "code", "message", "details?"}}` (`src/utils/errorMessage.js`), preferindo as mensagens por campo de `details`.
+- **Erros:** toda falha de resposta vira um `ApiError` (`src/utils/apiError.js`) com `status`, `code`, `details` e o `Retry-After`, lidos do envelope `{"error": {"status", "code", "message", "details?"}}`. As telas chamam `describeError(err)`, que devolve a mensagem final: no `429` do limite de requisições diz quanto esperar (`Muitas requisições. Tente novamente em 59 segundos.`), no `401` diz que a sessão expirou (exceto credenciais inválidas), em falha de rede diz que não foi possível conectar, e um `5xx` inesperado nunca mostra o texto interno. As decisões usam `status` e `code`, nunca o texto da mensagem.
 
 ## Qualidade
 
-- **CI** (GitHub Actions): `npm run lint`, `npm run build` e o build da imagem Docker.
-- **Não há testes automatizados** do frontend.
+- **CI** (GitHub Actions): `npm run lint`, `npm test`, `npm run build` e o build da imagem Docker.
+- **Testes (Vitest):** cobrem a lógica de erro (`ApiError`, `describeError`, a mensagem da tela de trilha) e o contrato do `authService`: um teste percorre **todas** as funções exportadas e falha se alguma deixar de lançar `ApiError` ou se uma função nova ficar de fora. Usam `fetch` simulado. Em uma verificação manual, as mesmas funções também foram executadas contra a API real (422, 401, 429 com `Retry-After`, 403, 404, 502, sessão expirada e rede fora do ar) e produziram as mensagens esperadas; essa verificação não está automatizada.
+- **Não há testes de telas** nem de fluxos no navegador.
 
 ## Limitações
 
-- **Sem testes automatizados.** O comportamento no navegador (renovação de sessão, várias abas, fluxos de erro) não é coberto por testes e **não foi verificado de forma sistemática**.
+- **Telas e fluxos sem testes.** O comportamento no navegador (renovação de sessão, várias abas, como cada tela exibe o erro) não é coberto por testes e **não foi verificado de forma sistemática**: a lógica que decide a mensagem é testada, mas a renderização não.
 - **JWT em `localStorage`**, exposto a roubo por XSS. A alternativa (cookie `HttpOnly` com proteção CSRF) exigiria mudanças no backend e não foi implementada.
-- **Erros que o usuário não vê:** em algumas telas o erro é registrado no estado, mas **não é exibido**. Por exemplo, ao excluir a conta com a senha errada e ao pedir o link de recuperação de senha com falha, nada aparece na tela (`ExcludePage`, `RecoveryPage`; em `ConfigPage` isso vale para o erro do link de redefinição).
-- **Não verifiquei** como as telas reagem aos erros `429` (limite de requisições) e `503` (serviço indisponível) do backend, nem a erros de validação `422` por campo fora dos formulários que já leem o envelope.
-- A tela da trilha (`DevelopmentTrailPage`) decide o que mostrar a partir do **texto** da mensagem de erro, o que é frágil.
+- **Mensagens de validação (`422`) misturam idiomas.** A API devolve as mensagens do Pydantic em inglês junto das próprias em português, então uma mesma tela pode exibir frases em dois idiomas. O frontend as mostra como vêm; traduzi-las é trabalho da API.
+- **A `HomePage` ainda falha em silêncio:** os totais e as listas recentes só registram o erro no console e mostram `0` ou lista vazia, o que é indistinguível de "não há itens".
 - A imagem Docker foi testada localmente (rotas do React Router, cache de assets, usuário não-root, healthcheck), mas **sem** cabeçalhos de segurança (CSP, HSTS) e sem TLS: isso fica para o proxy ou o provedor de hospedagem.
 - `axios` consta nas dependências, mas nenhum arquivo de `src/` o usa.

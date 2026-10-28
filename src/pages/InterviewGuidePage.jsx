@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header'; // Importando o Header component
 import './InterviewGuidePage.css';
 import { analyzeInterviewGuide } from '../services/authService';
+import { describeError } from '../utils/apiError';
 
 
 const InterviewGuidePage = () => {
@@ -99,8 +100,7 @@ const InterviewGuidePage = () => {
     } catch (err) {
       console.error(err);
       // Usa a mensagem de erro específica do backend se disponível
-      const errorMessage = err.message || 'Erro ao gerar o guia de entrevista. Tente novamente.';
-      setError(errorMessage);
+      setError(describeError(err, 'Erro ao gerar o guia de entrevista. Tente novamente.'));
     } finally {
       setIsGenerating(false);
     }

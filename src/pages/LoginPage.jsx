@@ -5,6 +5,7 @@ import logo from '../assets/div.svg';
 import emailLogo from '../assets/Vector.svg';
 import passwordLogo from '../assets/pass.svg';
 import { loginUser } from '../services/authService'; 
+import { ApiError, describeError } from '../utils/apiError';
 // import './LoginPage.css';
 
 
@@ -47,7 +48,11 @@ const LoginPage = () => {
 
     } catch (err) {
       console.error(err);
-      setError('Email ou senha incorretos');
+      setError(
+        err instanceof ApiError && err.code === 'invalid_credentials'
+          ? 'Email ou senha incorretos'
+          : describeError(err, 'Não foi possível entrar. Tente novamente.')
+      );
     }
   };
 

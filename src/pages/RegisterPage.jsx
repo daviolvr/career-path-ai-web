@@ -7,6 +7,7 @@ import passwordLogo from '../assets/pass.svg';
 import caba from '../assets/caba.svg';
 import { registerUser, loginUser } from '../services/authService'; 
 import './RegisterPage.css';
+import { describeError } from '../utils/apiError';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -47,9 +48,7 @@ const RegisterPage = () => {
 
     } catch (err) {
       console.error('Erro no cadastro:', err);
-      const errorMessage = err.message || 'Erro ao cadastrar. Verifique os dados e tente novamente.';
-
-      setError(errorMessage);
+      setError(describeError(err, 'Erro ao cadastrar. Verifique os dados e tente novamente.'));
     }
   };
 

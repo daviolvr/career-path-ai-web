@@ -4,6 +4,7 @@ import logo from "../assets/div.svg";
 import UserProfile from "../components/UserProfile";
 import { getDevelopmentTrails, deleteDevelopmentTrail } from "../services/authService";
 import "./StudyTrailHistoryPage.css";
+import { describeError } from '../utils/apiError';
 
 const StudyTrailHistoryPage = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const StudyTrailHistoryPage = () => {
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [trilhas, setTrilhas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const itensPorPagina = 4;
 
   useEffect(() => {
@@ -24,6 +26,7 @@ const StudyTrailHistoryPage = () => {
       } catch (err) {
         console.error('Erro ao buscar trilhas:', err);
         setTrilhas([]);
+        setLoadError(describeError(err, 'Erro ao buscar trilhas.'));
       } finally {
         setLoading(false);
       }
@@ -78,7 +81,7 @@ const StudyTrailHistoryPage = () => {
       }
     } catch (err) {
       console.error('Erro ao deletar trilha:', err);
-      alert('Erro ao excluir trilha');
+      alert(describeError(err, 'Erro ao excluir trilha'));
     }
   };
 
@@ -153,6 +156,8 @@ const StudyTrailHistoryPage = () => {
             <div style={{ textAlign: 'center', padding: '40px' }}>
               <p>Carregando trilhas...</p>
             </div>
+          ) : loadError ? (
+            <p className="error">{loadError}</p>
           ) : trilhasPaginaAtual.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px 20px' }}>
               <div style={{ fontSize: '48px', marginBottom: '20px' }}>📚</div>

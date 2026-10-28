@@ -8,6 +8,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { getDevelopmentTrailById } from '../services/authService';
 import './VocationalTrailResultPage.css';
+import { describeError } from '../utils/apiError';
 
 const VocationalTrailResultPage = () => {
   const { id } = useParams();
@@ -78,7 +79,7 @@ const VocationalTrailResultPage = () => {
         });
       } catch (err) {
         console.error('Erro ao buscar trilha:', err);
-        setError('Erro ao carregar trilha. Por favor, tente novamente.');
+        setError(describeError(err, 'Erro ao carregar trilha. Por favor, tente novamente.'));
       } finally {
         setLoading(false);
       }

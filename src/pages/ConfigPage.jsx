@@ -6,6 +6,7 @@ import back from '../assets/back.svg';
 import "./ConfigPage.css";
 
 import { emailResetPassword, EditUserName, excludeUser } from '../services/authService'; 
+import { describeError } from '../utils/apiError';
 
 const ConfigPage = () => {
   const navigate = useNavigate();
@@ -17,7 +18,6 @@ const ConfigPage = () => {
 
   const [errorName, setErrorName] = useState("");
   const [, setSuccess] = useState("");
-  const [, setError] = useState("");
 
   // validação simples: mínimo 2 palavras
   function validarNomeCompleto(nomeDigitado) {
@@ -60,8 +60,7 @@ const ConfigPage = () => {
 
     } catch (err) {
       console.error(err);
-      const errorMessage = err.message || "Erro ao atualizar nome.";
-      setErrorName(errorMessage);
+      setErrorName(describeError(err, "Erro ao atualizar nome."));
     }
   };
 
@@ -84,19 +83,18 @@ const ConfigPage = () => {
       navigate("/login");
     } catch (err) {
       console.error('Erro ao excluir conta:', err);
-      alert('Erro ao excluir conta. Verifique se a senha está correta.');
+      alert(describeError(err, 'Erro ao excluir conta.'));
     }
   };
 
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
-    setError("");
     try {
       await emailResetPassword(email);
       alert("Se o e-mail existir, enviaremos instruções para redefinir sua senha.");
     } catch (err) {
       console.error(err);
-      setError("Erro ao gerar link para resetar senha");
+      alert(describeError(err, "Não foi possível enviar o e-mail de redefinição."));
     }
   };
 

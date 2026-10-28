@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import { getInterviewGuideById } from '../services/authService';
 import './InterviewGuideResultPage.css';
+import { describeError } from '../utils/apiError';
 
 const InterviewGuideResultPage = () => {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ const InterviewGuideResultPage = () => {
         setGuide(data);
       } catch (err) {
         console.error('Erro ao buscar guia:', err);
-        setError('Erro ao carregar guia de entrevista');
+        setError(describeError(err, 'Erro ao carregar guia de entrevista'));
       } finally {
         setLoading(false);
       }

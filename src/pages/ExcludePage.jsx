@@ -5,14 +5,15 @@ import passwordLogo from '../assets/pass.svg';
 import './ExcludePage.css';
 
 import { excludeUser } from '../services/authService'; 
+import { describeError } from '../utils/apiError';
 
 const ExcludePage = () => {
   const [password, setPassword] = useState('');
-  const [, setError] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(' ');
+    setError('');
     try {
       await excludeUser(password);
       alert("Conta excluida com sucesso.");
@@ -20,7 +21,7 @@ const ExcludePage = () => {
 
     } catch (err) {
       console.error(err);
-      setError('Erro ao gerar link para resetar senha');
+      setError(describeError(err, 'Não foi possível excluir a conta.'));
     }
   };
 
@@ -40,6 +41,8 @@ const ExcludePage = () => {
 
         {/* Formulário */}
         <form onSubmit={handleSubmit} className="login-form">
+          {error && <p className="error">{error}</p>}
+
           {/* Campo de E-mail */}
           <div className="form-group">
             <label className="form-label">Senha</label>

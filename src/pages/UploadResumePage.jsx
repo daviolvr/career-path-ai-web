@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header'; // Importando o Header component
 import './UploadResumePage.css';
 import { analyzeResume } from "../services/authService"; 
+import { describeError } from '../utils/apiError';
 
 
 const UploadResumePage = () => {
@@ -91,23 +92,7 @@ const UploadResumePage = () => {
     } catch (err) {
       console.error('Erro completo:', err);
       
-      // Mensagem de erro mais específica
-      let errorMessage = 'Erro ao fazer upload do currículo. Tente novamente.';
-      
-      if (err.message) {
-        // Tenta extrair a mensagem de erro do backend
-        if (err.status === 429) {
-          errorMessage = 'Limite de uso da API do Gemini excedido. Por favor, aguarde alguns minutos e tente novamente.';
-        } else if (err.message.includes('API key') || err.message.includes('autenticação') || err.message.includes('expired')) {
-          errorMessage = 'Erro de autenticação com a API. A chave de API pode ter expirado. Entre em contato com o suporte.';
-        } else if (err.message.includes('PDF') || err.message.includes('arquivo')) {
-          errorMessage = err.message;
-        } else if (err.message.length > 0 && err.message.length < 200) {
-          errorMessage = err.message;
-        }
-      }
-      
-      setError(errorMessage);
+      setError(describeError(err, 'Erro ao fazer upload do currículo. Tente novamente.'));
     } finally {
       setIsUploading(false);
     }

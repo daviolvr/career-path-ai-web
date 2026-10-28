@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import { getResumeAnalysisById } from '../services/authService';
 import './ResumeAnalysisPage.css';
+import { describeError } from '../utils/apiError';
 
 const ResumeAnalysisPage = () => {
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ const ResumeAnalysisPage = () => {
         });
       } catch (err) {
         console.error('Erro ao buscar análise:', err);
-        setError('Erro ao carregar análise de currículo');
+        setError(describeError(err, 'Erro ao carregar análise de currículo'));
       } finally {
         setLoading(false);
       }
