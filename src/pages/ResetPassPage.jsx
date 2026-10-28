@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 import logo from '../assets/div.svg'
 import passwordLogo from '../assets/pass.svg';
@@ -8,7 +8,6 @@ import './RecoveryPage.css';
 import { resetPassword } from '../services/authService'; 
 
 const ResetPassPage = () => {
-  const navigate = useNavigate();
   const [params] = useSearchParams();
   const token = params.get("token");  
   const [firstPassword, setFirstPassword] = useState('');
@@ -25,7 +24,7 @@ const ResetPassPage = () => {
     }
 
     try {
-          const data = await resetPassword(token, firstPassword);
+          await resetPassword(token, firstPassword);
           alert("Senha redefinida com sucesso!");
           window.location.href = "/login";
     

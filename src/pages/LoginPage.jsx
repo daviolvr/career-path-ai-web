@@ -11,7 +11,7 @@ import { loginUser } from '../services/authService';
 
 
 
-const LoginPage = ({ onForgotPassword }) => {
+const LoginPage = () => {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');

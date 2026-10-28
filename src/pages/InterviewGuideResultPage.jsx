@@ -150,7 +150,7 @@ const InterviewGuideResultPage = () => {
   const titleMatch = jobInfo.match(/(?:para|como)\s+([^-]+)/i);
   const jobTitle = titleMatch ? titleMatch[1].trim() : 'Desenvolvedor';
   // Extrai nome da empresa ou posição da descrição se disponível
-  const company = guide.interview_guide?.job_description?.match(/empresa[:\s]+([^\n,\.]+)/i)?.[1]?.trim() || 
+  const company = guide.interview_guide?.job_description?.match(/empresa[:\s]+([^\n,.]+)/i)?.[1]?.trim() || 
                   guide.interview_guide?.company_name || 
                   'Vaga de Emprego';
 

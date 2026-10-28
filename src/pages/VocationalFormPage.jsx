@@ -191,8 +191,6 @@ const VocationalFormPage = () => {
     }
   };
 
-  const progressPercentage = (currentStep / totalSteps) * 100;
-
   const renderInputField = () => {
     switch (currentQuestion.type) {
       case 'textarea':

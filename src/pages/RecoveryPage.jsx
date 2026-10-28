@@ -10,13 +10,13 @@ import { emailResetPassword } from '../services/authService';
 const RecoveryPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
+  const [, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(' ');
     try {
-      const data = await emailResetPassword(email);
+      await emailResetPassword(email);
       alert("Se o e-mail existir, enviaremos instruções para redefinir sua senha.");
 
     } catch (err) {

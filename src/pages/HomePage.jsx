@@ -163,14 +163,6 @@ const HomePage = () => {
     await logoutHelper();
   };
 
-  const goToUpload = () => {
-    navigate('/upload');
-  };
-
-  const goToHistoricoCurriculos = () => {
-    navigate('/historico-curriculos');
-  };
-
   const goToHistoricoTrilhas = () => {
     navigate('/historico-trilhas');
   };

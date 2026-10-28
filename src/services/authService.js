@@ -1,4 +1,3 @@
-import { apiRequest } from '../utils/apiClient';
 import { readErrorMessage } from '../utils/errorMessage';
 import { API_URL } from '../config';
 

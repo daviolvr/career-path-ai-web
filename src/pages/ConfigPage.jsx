@@ -3,11 +3,9 @@ import { useNavigate } from "react-router-dom";
 import key from '../assets/key.svg';
 import card from '../assets/card.svg';
 import back from '../assets/back.svg';
-import logoutIcon from '../assets/logout.svg';
-import exclude from '../assets/exclude.svg';
 import "./ConfigPage.css";
 
-import { emailResetPassword, EditUserName, excludeUser, logout } from '../services/authService'; 
+import { emailResetPassword, EditUserName, excludeUser } from '../services/authService'; 
 
 const ConfigPage = () => {
   const navigate = useNavigate();
@@ -18,8 +16,8 @@ const ConfigPage = () => {
   const [name, setName] = useState(user.name || "");
 
   const [errorName, setErrorName] = useState("");
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
+  const [, setSuccess] = useState("");
+  const [, setError] = useState("");
 
   // validação simples: mínimo 2 palavras
   function validarNomeCompleto(nomeDigitado) {

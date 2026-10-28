@@ -8,7 +8,7 @@ import caba from '../assets/caba.svg';
 import { registerUser, loginUser } from '../services/authService'; 
 import './RegisterPage.css';
 
-const RegisterPage = ({ onForgotPassword }) => {
+const RegisterPage = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');

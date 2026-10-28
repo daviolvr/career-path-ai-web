@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import logo from '../assets/div.svg'
 import passwordLogo from '../assets/pass.svg';
@@ -8,15 +7,14 @@ import './ExcludePage.css';
 import { excludeUser } from '../services/authService'; 
 
 const ExcludePage = () => {
-  const navigate = useNavigate();
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(' ');
     try {
-      const data = await excludeUser(password);
+      await excludeUser(password);
       alert("Conta excluida com sucesso.");
       window.location.href = "/login";
 
