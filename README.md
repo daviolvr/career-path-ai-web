@@ -59,7 +59,7 @@ O contrato completo (rotas, formato de erro, limites de requisição) está na d
 ## Qualidade
 
 - **CI** (GitHub Actions): `npm run lint`, `npm test`, `npm run build` e o build da imagem Docker.
-- **Testes (Vitest):** cobrem a lógica de erro (`ApiError`, `describeError`, a mensagem da tela de trilha) e o contrato do `authService`: um teste percorre **todas** as funções exportadas e falha se alguma deixar de lançar `ApiError` ou se uma função nova ficar de fora. Usam `fetch` simulado. Em uma verificação manual, as mesmas funções também foram executadas contra a API real (422, 401, 429 com `Retry-After`, 403, 404, 502, sessão expirada e rede fora do ar) e produziram as mensagens esperadas; essa verificação não está automatizada.
+- **Testes (Vitest):** cobrem a lógica de erro (`ApiError`, `describeError`, a mensagem da tela de trilha), a geração do PDF da trilha (gerado com o `jspdf` de verdade e conferido pelo texto, pelas páginas e pelo rodapé) e o contrato do `authService`: um teste percorre **todas** as funções exportadas e falha se alguma deixar de lançar `ApiError` ou se uma função nova ficar de fora. Usam `fetch` simulado. Em uma verificação manual, as mesmas funções também foram executadas contra a API real (422, 401, 429 com `Retry-After`, 403, 404, 502, sessão expirada e rede fora do ar) e produziram as mensagens esperadas; essa verificação não está automatizada.
 - **Não há testes de telas** nem de fluxos no navegador.
 
 ## Limitações
