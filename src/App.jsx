@@ -15,7 +15,6 @@ import ResumeAnalysisHistoryPage from './pages/ResumeAnalysisHistoryPage';
 import InterviewGuidePage from './pages/InterviewGuidePage';
 import InterviewGuideResultPage from './pages/InterviewGuideResultPage';
 import VocationalFormPage from './pages/VocationalFormPage';
-import VocationalTrailResultPage from './pages/VocationalTrailResultPage';
 import InterviewGuideHistoryPage from './pages/InterviewGuideHistoryPage';
 import ResumeAnalysisPage from './pages/ResumeAnalysisPage';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -46,7 +45,6 @@ function App() {
         <Route path="/interview-guide" element={<ProtectedRoute><InterviewGuidePage /></ProtectedRoute>} />
         <Route path="/interview-guide-result/:id" element={<ProtectedRoute><InterviewGuideResultPage /></ProtectedRoute>} />
         <Route path="/vocational-form" element={<ProtectedRoute><VocationalFormPage /></ProtectedRoute>} />
-        <Route path="/vocational-form-response" element={<ProtectedRoute><VocationalTrailResultPage /></ProtectedRoute>} />
         
         {/* Rota padrão redireciona para home */}
         <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
