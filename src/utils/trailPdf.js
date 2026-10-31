@@ -1,54 +1,27 @@
 import jsPDF from 'jspdf';
 
-export const formatWeeks = (developmentPhases) => {
-  if (!developmentPhases || !Array.isArray(developmentPhases)) {
+// A IA devolve fases com duração própria (ex.: "2 meses"); elas são mostradas como vieram,
+// sem convertê-las em semanas nem completar ou cortar o plano.
+export const formatPhases = (developmentPhases) => {
+  if (!Array.isArray(developmentPhases)) {
     return [];
   }
 
-  // Converte fases em semanas
-  const weeks = [];
-  let weekNumber = 1;
+  return developmentPhases.map((phase, index) => ({
+    number: index + 1,
+    title: phase.phase || `Fase ${index + 1}`,
+    duration: phase.duration || '',
+    focus: phase.focus || '',
+    topics: phase.topics || [],
+    projects: phase.projects || [],
+    learningOutcomes: phase.learning_outcomes || [],
+  }));
+};
 
-  developmentPhases.forEach((phase, index) => {
-    // Extrai duração da fase (ex: "2-3 semanas" ou "2 meses")
-    const duration = phase.duration || '';
-    const weeksMatch = duration.match(/(\d+)\s*semanas?/i);
-    const monthsMatch = duration.match(/(\d+)\s*meses?/i);
-    
-    let phaseWeeks = 1;
-    if (weeksMatch) {
-      phaseWeeks = parseInt(weeksMatch[1]);
-    } else if (monthsMatch) {
-      phaseWeeks = parseInt(monthsMatch[1]) * 4; // Aproximação: 1 mês = 4 semanas
-    }
-
-    // Cria semanas baseadas na fase
-    for (let i = 0; i < phaseWeeks && weekNumber <= 6; i++) {
-      weeks.push({
-        weekNumber: weekNumber,
-        phase: phase.phase || `Fase ${index + 1}`,
-        focus: phase.focus || '',
-        topics: phase.topics || [],
-        projects: phase.projects || [],
-        learningOutcomes: phase.learning_outcomes || [],
-      });
-      weekNumber++;
-    }
-  });
-
-  // Preenche até 6 semanas se necessário
-  while (weeks.length < 6) {
-    weeks.push({
-      weekNumber: weeks.length + 1,
-      phase: 'Consolidação',
-      focus: 'Revisão e prática',
-      topics: ['Revisão dos tópicos anteriores'],
-      projects: ['Projeto de consolidação'],
-      learningOutcomes: ['Aplicação prática dos conhecimentos'],
-    });
-  }
-
-  return weeks.slice(0, 6); // Garante máximo de 6 semanas
+// Um tópico vem como "Título - descrição" ou "Título: descrição".
+export const splitTopic = (topic) => {
+  const parts = topic.split(/ - |: /);
+  return { title: parts[0], description: parts.length > 1 ? parts.slice(1).join(' - ') : '' };
 };
 
 export const trailPdfFileName = (trail, now = new Date()) =>
@@ -57,7 +30,7 @@ export const trailPdfFileName = (trail, now = new Date()) =>
 // Monta o PDF da trilha e devolve o documento (quem chama decide salvar).
 export const buildTrailPdf = (trail) => {
   const developmentData = trail.development_trail || {};
-  const weeks = formatWeeks(developmentData.development_phases || []);
+  const phases = formatPhases(developmentData.development_phases || []);
 
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -120,76 +93,79 @@ export const buildTrailPdf = (trail) => {
     addText('INFORMAÇÕES DO PERFIL', 14, true, [59, 130, 246]);
     yPosition += 2;
     
-    if (profile.professional_goal) {
-      addText(`Objetivo Profissional: ${profile.professional_goal}`, 11, true);
+    if (profile.current_profile) {
+      addText(`Perfil Atual: ${profile.current_profile}`, 10);
     }
-    
-    if (profile.current_level) {
-      addText(`Nível Atual: ${profile.current_level}`, 10);
+
+    if (profile.strengths?.length > 0) {
+      addText(`Pontos Fortes: ${profile.strengths.join('; ')}`, 10);
     }
-    
-    if (profile.goal_timeframe) {
-      addText(`Prazo Estimado: ${profile.goal_timeframe}`, 10);
+
+    if (profile.improvement_areas?.length > 0) {
+      addText(`Áreas de Melhoria: ${profile.improvement_areas.join('; ')}`, 10);
     }
-    
+
     yPosition += 5;
   }
 
-  // Semanas
-  if (weeks && weeks.length > 0) {
-    addText('PLANO SEMANAL DE ESTUDOS', 14, true, [59, 130, 246]);
+  // Fases
+  if (phases.length > 0) {
+    addText('FASES DO PLANO', 14, true, [59, 130, 246]);
     yPosition += 5;
 
-    weeks.forEach((week, weekIndex) => {
+    phases.forEach((phase, phaseIndex) => {
       checkPageBreak(50);
-      
-      // Título da semana
+
+      // Título da fase (pode ocupar mais de uma linha)
+      const titleLines = doc.splitTextToSize(phase.title, maxWidth - 10);
+      const barHeight = 9 + titleLines.length * 6;
       doc.setFillColor(139, 92, 246); // Roxo
-      doc.roundedRect(margin, yPosition - 8, maxWidth, 15, 3, 3, 'F');
-      
+      doc.roundedRect(margin, yPosition - 8, maxWidth, barHeight, 3, 3, 'F');
+
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(14);
+      doc.setFontSize(13);
       doc.setFont(undefined, 'bold');
-      doc.text(`SEMANA ${week.weekNumber}`, margin + 5, yPosition);
-      
-      yPosition += 12;
+      doc.text(titleLines, margin + 5, yPosition);
+
+      yPosition += barHeight - 3;
       doc.setTextColor(0, 0, 0);
 
-      // Foco da semana
-      if (week.focus) {
-        addText(`Foco: ${week.focus}`, 11, true, [100, 100, 100]);
+      if (phase.duration) {
+        addText(`Duração: ${phase.duration}`, 10, false, [100, 100, 100]);
+      }
+
+      // Foco da fase
+      if (phase.focus) {
+        addText(`Foco: ${phase.focus}`, 11, true, [100, 100, 100]);
       }
 
       // Tópicos
-      if (week.topics && week.topics.length > 0) {
+      if (phase.topics.length > 0) {
         addText('Tópicos de Estudo:', 11, true);
-        week.topics.forEach(topic => {
-          const parts = topic.split(/ - |: /);
-          const title = parts[0];
-          const description = parts.length > 1 ? parts.slice(1).join(' - ') : '';
-          const fullText = description ? `${title} - ${description}` : title;
-          addText(`  • ${fullText}`, 10);
+        phase.topics.forEach(topic => {
+          const { title, description } = splitTopic(topic);
+          addText(`  • ${description ? `${title} - ${description}` : title}`, 10);
         });
       }
 
       // Projetos
-      if (week.projects && week.projects.length > 0) {
+      if (phase.projects.length > 0) {
         addText('Projetos Práticos:', 11, true);
-        week.projects.forEach(project => {
+        phase.projects.forEach(project => {
           addText(`  • ${project}`, 10);
         });
       }
 
       // Resultados Esperados
-      if (week.learningOutcomes && week.learningOutcomes.length > 0) {
+      if (phase.learningOutcomes.length > 0) {
         addText('Resultados Esperados:', 11, true);
-        week.learningOutcomes.forEach(outcome => {
+        phase.learningOutcomes.forEach(outcome => {
           addText(`  • ${outcome}`, 10);
         });
       }
 
-      // Espaço entre semanas (exceto na última)
-      if (weekIndex < weeks.length - 1) {
+      // Espaço entre fases (exceto na última)
+      if (phaseIndex < phases.length - 1) {
         yPosition += 5;
         doc.setDrawColor(200, 200, 200);
         doc.line(margin, yPosition, pageWidth - margin, yPosition);
@@ -199,7 +175,7 @@ export const buildTrailPdf = (trail) => {
   }
 
   // Rodapé
-  const totalPages = doc.internal.pages.length - 1;
+  const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     doc.setFontSize(8);

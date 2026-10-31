@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header'; // Importando o Header component
 import { getDevelopmentTrailById } from '../services/authService';
 import { describeTrailError } from '../utils/describeTrailError';
-import { buildTrailPdf, formatWeeks, trailPdfFileName } from '../utils/trailPdf';
+import { buildTrailPdf, formatPhases, splitTopic, trailPdfFileName } from '../utils/trailPdf';
 import './DevelopmentTrailPage.css';
 
 const DevelopmentTrailPage = () => {
@@ -111,7 +111,7 @@ const DevelopmentTrailPage = () => {
   }
 
   const developmentData = trail.development_trail || {};
-  const weeks = formatWeeks(developmentData.development_phases || []);
+  const phases = formatPhases(developmentData.development_phases || []);
 
   return (
     <div className="trail-container">
@@ -131,27 +131,25 @@ const DevelopmentTrailPage = () => {
             )}
           </div>
 
-          <div className="weeks-container">
-            {weeks.map((week, index) => (
-              <div key={index} className="week-card">
-                <div className="week-header">
-                  <div className="week-icon">📅</div>
-                  <h2 className="week-title">Semana {week.weekNumber}</h2>
+          <div className="phases-container">
+            {phases.map((phase, index) => (
+              <div key={index} className="phase-card">
+                <div className="phase-header">
+                  <div className="phase-icon">📅</div>
+                  <h2 className="phase-title">{phase.title}</h2>
+                  {phase.duration && <span className="phase-duration">{phase.duration}</span>}
                 </div>
                 
-                {week.focus && (
-                  <p className="week-focus">{week.focus}</p>
+                {phase.focus && (
+                  <p className="phase-focus">{phase.focus}</p>
                 )}
 
-                {week.topics && week.topics.length > 0 && (
-                  <div className="week-content">
+                {phase.topics && phase.topics.length > 0 && (
+                  <div className="phase-content">
                     <h3 className="content-title">Tópicos:</h3>
                     <ul className="content-list">
-                      {week.topics.map((topic, topicIndex) => {
-                        // Se o tópico tem " - " ou ": ", separa título e descrição
-                        const parts = topic.split(/ - |: /);
-                        const title = parts[0];
-                        const description = parts.length > 1 ? parts.slice(1).join(' - ') : '';
+                      {phase.topics.map((topic, topicIndex) => {
+                        const { title, description } = splitTopic(topic);
                         return (
                           <li key={topicIndex} className="topic-item">
                             <span className="bullet blue"></span>
@@ -166,11 +164,11 @@ const DevelopmentTrailPage = () => {
                   </div>
                 )}
 
-                {week.projects && week.projects.length > 0 && (
-                  <div className="week-content">
+                {phase.projects && phase.projects.length > 0 && (
+                  <div className="phase-content">
                     <h3 className="content-title">Projetos Práticos:</h3>
                     <ul className="content-list">
-                      {week.projects.map((project, projectIndex) => {
+                      {phase.projects.map((project, projectIndex) => {
                         const isFinalProject = project.toLowerCase().includes('final') || project.toLowerCase().includes('completa');
                         return (
                           <li key={projectIndex} className="project-item">
@@ -183,11 +181,11 @@ const DevelopmentTrailPage = () => {
                   </div>
                 )}
 
-                {week.learningOutcomes && week.learningOutcomes.length > 0 && (
-                  <div className="week-content">
+                {phase.learningOutcomes && phase.learningOutcomes.length > 0 && (
+                  <div className="phase-content">
                     <h3 className="content-title">Resultados Esperados:</h3>
                     <ul className="content-list">
-                      {week.learningOutcomes.map((outcome, outcomeIndex) => (
+                      {phase.learningOutcomes.map((outcome, outcomeIndex) => (
                         <li key={outcomeIndex} className="outcome-item">
                           <span className="bullet blue"></span>
                           <span className="item-text">{outcome}</span>

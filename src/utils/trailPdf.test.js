@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { buildTrailPdf, formatWeeks, trailPdfFileName } from './trailPdf';
+import { buildTrailPdf, formatPhases, splitTopic, trailPdfFileName } from './trailPdf';
 
 const phase = (overrides = {}) => ({
   phase: 'Base',
-  duration: '2 semanas',
+  duration: '2 meses',
   focus: 'Fundamentos de Python',
   topics: ['Tipos - dados básicos'],
   projects: ['CLI de tarefas'],
@@ -20,63 +20,43 @@ const trailWith = (phases, profile) => ({
   },
 });
 
+// Mesmos campos que a API devolve em `user_profile_summary` (app/schemas/ai_outputs.py).
 const PROFILE = {
-  professional_goal: 'Back-End Júnior',
-  current_level: 'iniciante',
-  goal_timeframe: '3 meses',
+  current_profile: 'Desenvolvedor júnior com base em Python',
+  strengths: ['Python', 'Lógica de programação'],
+  improvement_areas: ['Banco de dados', 'Testes automatizados'],
 };
 
 // O jsPDF grava o texto sem compressão: dá para procurá-lo no conteúdo do arquivo.
 const pdfText = (doc) => doc.output();
 
-describe('formatWeeks', () => {
+describe('formatPhases', () => {
   it('devolve lista vazia quando não há fases em formato de lista', () => {
-    expect(formatWeeks(undefined)).toEqual([]);
-    expect(formatWeeks(null)).toEqual([]);
-    expect(formatWeeks('fases')).toEqual([]);
+    expect(formatPhases(undefined)).toEqual([]);
+    expect(formatPhases(null)).toEqual([]);
+    expect(formatPhases('fases')).toEqual([]);
   });
 
-  it('cria uma semana por semana de duração da fase', () => {
-    const weeks = formatWeeks([phase({ duration: '3 semanas' })]);
+  it('mostra cada fase da IA, na ordem, sem completar nem cortar o plano', () => {
+    const phases = formatPhases([
+      phase({ phase: 'Fase 1: Base', duration: '2 meses' }),
+      phase({ phase: 'Fase 2: Prática', duration: '4 meses' }),
+      phase({ phase: 'Fase 3: Projetos', duration: '5 meses' }),
+    ]);
 
-    expect(weeks.slice(0, 3).map((w) => w.phase)).toEqual(['Base', 'Base', 'Base']);
-    expect(weeks[3].phase).not.toBe('Base');
+    expect(phases.map((p) => p.title)).toEqual(['Fase 1: Base', 'Fase 2: Prática', 'Fase 3: Projetos']);
+    expect(phases.map((p) => p.duration)).toEqual(['2 meses', '4 meses', '5 meses']);
+    expect(phases.map((p) => p.number)).toEqual([1, 2, 3]);
   });
 
-  it('converte meses em quatro semanas cada (limitado a 6 no total)', () => {
-    const weeks = formatWeeks([phase({ duration: '2 meses' })]);
-
-    expect(weeks).toHaveLength(6);
-    expect(weeks.every((w) => w.phase === 'Base')).toBe(true);
-  });
-
-  // BUG CONHECIDO (MELHORIAS.md da API): a expressão procura "meses?" e não reconhece "mês",
-  // com acento, então "1 mês" vira 1 semana em vez de 4. `it.fails` passa enquanto o bug existe
-  // e falha quando for corrigido: nesse momento, troque por `it`.
-  it.fails('reconhece "1 mês" (singular, com acento) como quatro semanas', () => {
-    const weeks = formatWeeks([phase({ duration: '1 mês' })]);
-
-    expect(weeks.filter((w) => w.phase === 'Base')).toHaveLength(4);
-  });
-
-  it('usa uma semana quando a duração não é reconhecida ou não existe', () => {
-    for (const duration of ['em breve', '', undefined]) {
-      const weeks = formatWeeks([phase({ duration })]);
-      expect(weeks.filter((w) => w.phase === 'Base')).toHaveLength(1);
-    }
-  });
-
-  it('numera as semanas em sequência atravessando as fases', () => {
-    const weeks = formatWeeks([phase({ phase: 'A', duration: '2 semanas' }), phase({ phase: 'B' })]);
-
-    expect(weeks.map((w) => w.weekNumber)).toEqual([1, 2, 3, 4, 5, 6]);
-    expect(weeks.slice(0, 4).map((w) => w.phase)).toEqual(['A', 'A', 'B', 'B']);
+  it('não inventa fases para um plano curto', () => {
+    expect(formatPhases([phase()])).toHaveLength(1);
   });
 
   it('copia foco, tópicos, projetos e resultados da fase', () => {
-    const [week] = formatWeeks([phase()]);
+    const [first] = formatPhases([phase()]);
 
-    expect(week).toMatchObject({
+    expect(first).toMatchObject({
       focus: 'Fundamentos de Python',
       topics: ['Tipos - dados básicos'],
       projects: ['CLI de tarefas'],
@@ -85,27 +65,32 @@ describe('formatWeeks', () => {
   });
 
   it('nomeia a fase pela posição quando ela não tem nome', () => {
-    const weeks = formatWeeks([phase({ phase: undefined })]);
-
-    expect(weeks[0].phase).toBe('Fase 1');
+    expect(formatPhases([phase({ phase: undefined })])[0].title).toBe('Fase 1');
   });
 
-  // Comportamento ATUAL, registrado em MELHORIAS.md como a ser revisto: a lista sempre tem
-  // exatamente 6 semanas, completando com semanas genéricas ou cortando o excedente.
-  describe('limite fixo de 6 semanas (comportamento atual)', () => {
-    it('completa com semanas de consolidação até chegar a 6', () => {
-      const weeks = formatWeeks([phase({ duration: '1 semana' })]);
+  it('aceita fase sem duração, foco ou listas', () => {
+    const [first] = formatPhases([{ phase: 'Só o nome' }]);
 
-      expect(weeks).toHaveLength(6);
-      expect(weeks.slice(1).every((w) => w.phase === 'Consolidação')).toBe(true);
+    expect(first).toEqual({
+      number: 1,
+      title: 'Só o nome',
+      duration: '',
+      focus: '',
+      topics: [],
+      projects: [],
+      learningOutcomes: [],
     });
+  });
+});
 
-    it('corta o que passa de 6 semanas', () => {
-      const weeks = formatWeeks([phase({ duration: '5 meses' })]);
-
-      expect(weeks).toHaveLength(6);
-      expect(weeks.every((w) => w.phase === 'Base')).toBe(true);
-    });
+describe('splitTopic', () => {
+  it.each([
+    ['Tipos - dados básicos', { title: 'Tipos', description: 'dados básicos' }],
+    ['Tipos: dados básicos', { title: 'Tipos', description: 'dados básicos' }],
+    ['Só o título', { title: 'Só o título', description: '' }],
+    ['A - b - c', { title: 'A', description: 'b - c' }],
+  ])('separa %j', (topic, expected) => {
+    expect(splitTopic(topic)).toEqual(expected);
   });
 });
 
@@ -116,6 +101,15 @@ describe('trailPdfFileName', () => {
     );
   });
 });
+
+const longPhases = () => {
+  const many = Array.from({ length: 12 }, (_, i) => `Tópico longo número ${i + 1} - descrição`);
+  return [
+    phase({ phase: 'Fase 1: Base', duration: '2 meses', topics: many, projects: many }),
+    phase({ phase: 'Fase 2: Prática', duration: '4 meses', topics: many, projects: many }),
+    phase({ phase: 'Fase 3: Projetos', duration: '5 meses', topics: many, projects: many }),
+  ];
+};
 
 describe('buildTrailPdf', () => {
   afterEach(() => {
@@ -129,21 +123,41 @@ describe('buildTrailPdf', () => {
     expect(output.trimEnd().endsWith('%%EOF')).toBe(true);
   });
 
-  it('escreve o título, o perfil e as seis semanas', () => {
+  it('escreve o título e o perfil com os campos que a API devolve', () => {
     const output = pdfText(buildTrailPdf(trailWith([phase()], PROFILE)));
 
     expect(output).toContain('Plano de Desenvolvimento Personalizado');
     expect(output).toContain('INFORMAÇÕES DO PERFIL');
-    expect(output).toContain('Objetivo Profissional: Back-End Júnior');
-    expect(output).toContain('Nível Atual: iniciante');
-    expect(output).toContain('Prazo Estimado: 3 meses');
-    for (let n = 1; n <= 6; n += 1) {
-      expect(output).toContain(`SEMANA ${n}`);
-    }
-    expect(output).not.toContain('SEMANA 7');
+    expect(output).toContain('Perfil Atual: Desenvolvedor júnior com base em Python');
+    expect(output).toContain('Pontos Fortes: Python; Lógica de programação');
+    expect(output).toContain('Áreas de Melhoria: Banco de dados; Testes automatizados');
   });
 
-  it('escreve foco, tópicos, projetos e resultados esperados da semana', () => {
+  it('escreve todas as fases da IA com a duração, sem criar semanas', () => {
+    const output = pdfText(
+      buildTrailPdf(
+        trailWith(
+          [
+            phase({ phase: 'Fase 1: Fundamentos', duration: '2 meses' }),
+            phase({ phase: 'Fase 2: Especialização', duration: '4 meses' }),
+            phase({ phase: 'Fase 3: Aprofundamento', duration: '5 meses' }),
+          ],
+          PROFILE,
+        ),
+      ),
+    );
+
+    expect(output).toContain('FASES DO PLANO');
+    for (const title of ['Fase 1: Fundamentos', 'Fase 2: Especialização', 'Fase 3: Aprofundamento']) {
+      expect(output).toContain(title);
+    }
+    for (const duration of ['Duração: 2 meses', 'Duração: 4 meses', 'Duração: 5 meses']) {
+      expect(output).toContain(duration);
+    }
+    expect(output).not.toMatch(/SEMANA|Consolidação/);
+  });
+
+  it('escreve foco, tópicos, projetos e resultados esperados da fase', () => {
     const output = pdfText(buildTrailPdf(trailWith([phase()], PROFILE)));
 
     expect(output).toContain('Foco: Fundamentos de Python');
@@ -159,11 +173,11 @@ describe('buildTrailPdf', () => {
     const output = pdfText(buildTrailPdf(trailWith([phase()], undefined)));
 
     expect(output).not.toContain('INFORMAÇÕES DO PERFIL');
-    expect(output).toContain('SEMANA 1');
+    expect(output).toContain('FASES DO PLANO');
   });
 
   it('numera cada página do rodapé com o total real de páginas', () => {
-    const doc = buildTrailPdf(trailWith([phase()], PROFILE));
+    const doc = buildTrailPdf(trailWith(longPhases(), PROFILE));
     const output = pdfText(doc);
     const total = doc.getNumberOfPages();
 
@@ -174,20 +188,32 @@ describe('buildTrailPdf', () => {
     expect(output).not.toContain(`Página ${total + 1} de`);
   });
 
-  it('passa para novas páginas quando o conteúdo é longo, sem perder nenhuma semana', () => {
-    const many = Array.from({ length: 12 }, (_, i) => `Tópico longo número ${i + 1} - descrição`);
-    const doc = buildTrailPdf(
-      trailWith([phase({ duration: '6 semanas', topics: many, projects: many })], PROFILE),
-    );
+  it('um plano curto cabe em uma página', () => {
+    const doc = buildTrailPdf(trailWith([phase()], PROFILE));
+
+    expect(doc.getNumberOfPages()).toBe(1);
+    expect(pdfText(doc)).toContain('Página 1 de 1 - CareerPathAI');
+  });
+
+  it('passa para novas páginas quando o conteúdo é longo, sem perder nenhuma fase', () => {
+    const doc = buildTrailPdf(trailWith(longPhases(), PROFILE));
     const output = pdfText(doc);
     const total = doc.getNumberOfPages();
 
-    expect(total).toBeGreaterThan(3);
-    for (let n = 1; n <= 6; n += 1) {
-      expect(output).toContain(`SEMANA ${n}`);
+    expect(total).toBeGreaterThan(2);
+    for (const title of ['Fase 1: Base', 'Fase 2: Prática', 'Fase 3: Projetos']) {
+      expect(output).toContain(title);
     }
     expect(output).toContain('Tópico longo número 12');
     expect(output).toContain(`Página ${total} de ${total} - CareerPathAI`);
+  });
+
+  it('quebra o título longo de uma fase em várias linhas em vez de cortá-lo', () => {
+    const title = `Fase 1: ${Array.from({ length: 20 }, (_, i) => `termo${i}`).join(' ')}`;
+    const output = pdfText(buildTrailPdf(trailWith([phase({ phase: title })], PROFILE)));
+
+    expect(output).toContain('termo0');
+    expect(output).toContain('termo19');
   });
 
   it('quebra textos longos em várias linhas em vez de cortá-los', () => {
